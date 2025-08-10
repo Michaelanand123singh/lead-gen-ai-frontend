@@ -16,8 +16,11 @@ const AnalyzePage = () => {
       const result = await startAnalysis(url);
       setAnalysisResult(result);
 
-      // Start polling if analysis is processing
-      if (result.analysis_id && result.status === ANALYSIS_STATUS.PROCESSING) {
+      // Start polling if analysis is processing or pending
+      if (
+        result.analysis_id &&
+        (result.status === ANALYSIS_STATUS.PROCESSING || result.status === ANALYSIS_STATUS.PENDING)
+      ) {
         pollAnalysis(result.analysis_id, (updatedResult) => {
           setAnalysisResult(prev => ({ ...prev, ...updatedResult }));
         });
@@ -28,11 +31,18 @@ const AnalyzePage = () => {
   };
 
   const renderAnalysisResult = () => {
-    if (!analysisResult) return null;
+    // Always render a container to avoid layout collapse
+    if (!analysisResult) {
+      return (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-center text-gray-500">
+          Enter a URL above and click Analyze to see results here.
+        </div>
+      );
+    }
 
     const { status, result } = analysisResult;
 
-    if (status === ANALYSIS_STATUS.PROCESSING) {
+    if (status === ANALYSIS_STATUS.PROCESSING || status === ANALYSIS_STATUS.PENDING) {
       return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="text-center">
@@ -226,14 +236,12 @@ const AnalyzePage = () => {
           </div>
         )}
 
-        {!analysisResult && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-            <URLInput 
-              onSubmit={handleAnalyze} 
-              loading={analysisLoading} 
-            />
-          </div>
-        )}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 mb-6">
+          <URLInput 
+            onSubmit={handleAnalyze} 
+            loading={analysisLoading} 
+          />
+        </div>
 
         {renderAnalysisResult()}
       </div>

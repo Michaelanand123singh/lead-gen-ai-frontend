@@ -3,7 +3,8 @@
 export const API_ENDPOINTS = {
   ANALYZE: '/analyze',
   BULK: '/bulk',
-  REPORTS: '/reports'
+  REPORTS: '/reports',
+  LEADS: '/leads'
 };
 
 export const ANALYSIS_STATUS = {
@@ -47,8 +48,12 @@ export const MESSAGES = {
 
 export const ROUTES = {
   HOME: '/',
+  LOGIN: '/login',
   ANALYZE: '/analyze',
   BULK: '/bulk',
   REPORTS: '/reports',
+  PROPOSALS: '/proposals',
+  LEADS: '/leads',
+  LEAD_TRACKER: '/lead-tracker',
   SETTINGS: '/settings'
 };

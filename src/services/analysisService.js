@@ -57,8 +57,9 @@ export const analysisService = {
     const response = await apiClient.get(`/bulk/${bulkId}/export`, { format });
     
     if (format === 'csv') {
-      // Create download link for CSV
-      const url = window.URL.createObjectURL(new Blob([response], { type: 'text/csv' }));
+      // response is text for CSV; ensure string
+      const csvText = typeof response === 'string' ? response : await response.text?.();
+      const url = window.URL.createObjectURL(new Blob([csvText || ''], { type: 'text/csv' }));
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', `bulk_results_${bulkId}.csv`);

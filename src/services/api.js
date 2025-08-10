@@ -1,5 +1,5 @@
 // frontend/src/services/api.js - FIXED VERSION
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://lead-gen-ai-backend.onrender.com/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api/v1';
 
 class ApiClient {
   constructor() {
@@ -16,12 +16,29 @@ class ApiClient {
       ...options,
     };
 
+    // Attach Authorization header if token exists
+    try {
+      const authRaw = localStorage.getItem('auth');
+      if (authRaw) {
+        const { access_token } = JSON.parse(authRaw);
+        if (access_token) {
+          config.headers['Authorization'] = `Bearer ${access_token}`;
+        }
+      }
+    } catch (e) { void e; }
+
     try {
       console.log(`🔥 Making request to: ${url}`, config);
       const response = await fetch(url, config);
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ detail: 'Request failed' }));
+        if (response.status === 401) {
+          try { localStorage.removeItem('auth'); } catch(e) { void e; }
+          if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+            window.location.replace('/login');
+          }
+        }
         throw new Error(errorData.detail || `HTTP ${response.status}`);
       }
 
@@ -69,6 +86,59 @@ class ApiClient {
       headers: {}, // Don't set Content-Type for FormData
       body: formData,
     });
+  }
+
+  // Leads API methods
+  async getLeads(limit = 100, skip = 0) {
+    return this.get('/leads', { limit, skip });
+  }
+
+  async getLeadDetail(leadId) {
+    return this.get(`/leads/${leadId}`);
+  }
+
+  async searchLeads(query, limit = 50) {
+    return this.get('/leads/search', { query, limit });
+  }
+
+  async getLeadTracking(leadId) {
+    return this.get(`/leads/${leadId}/tracking`);
+  }
+
+  async updateLeadTracking(leadId, data) {
+    return this.request(`/leads/${leadId}/tracking`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Auth/User methods
+  async getMe() {
+    return this.get('/auth/me');
+  }
+
+  async updateMe(data) {
+    return this.request('/auth/me', {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Admin methods
+  async listUsers() {
+    return this.get('/auth/users');
+  }
+
+  async countUsers() {
+    return this.get('/auth/users/count');
+  }
+
+  async createUser({ name, email, password }) {
+    return this.post('/auth/users', { name, email, password });
+  }
+
+  async forceLogoutUser(userId) {
+    return this.post(`/auth/users/${userId}/logout`, {});
   }
 }
 

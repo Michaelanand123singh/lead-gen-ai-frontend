@@ -33,12 +33,20 @@ export const useAnalysis = () => {
       setError(null);
       const result = await analysisService.analyzeWebsite(url);
       
+      // Normalize for UI expectations
+      const normalized = {
+        analysis_id: result.analysis_id,
+        status: result.status || ANALYSIS_STATUS.PROCESSING,
+        result: result.result || null,
+        message: result.message,
+      };
+      
       // Add to analyses list
-      if (result.analysis_id) {
+      if (normalized.analysis_id) {
         fetchAnalyses(); // Refresh list
       }
       
-      return result;
+      return normalized;
     } catch (err) {
       setError(err.message || 'Failed to start analysis');
       throw err;
@@ -86,10 +94,18 @@ export const useAnalysis = () => {
     const interval = setInterval(async () => {
       try {
         const data = await analysisService.getAnalysis(analysisId);
-        onUpdate(data);
+        const normalized = {
+          id: data.id,
+          url: data.url,
+          status: data.status || ANALYSIS_STATUS.PROCESSING,
+          result: data.result || data.result_data || null,
+          created_at: data.created_at,
+          updated_at: data.updated_at,
+        };
+        onUpdate(normalized);
         
         // Stop polling if completed or failed
-        if (data.status === ANALYSIS_STATUS.COMPLETED || data.status === ANALYSIS_STATUS.FAILED) {
+        if (normalized.status === ANALYSIS_STATUS.COMPLETED || normalized.status === ANALYSIS_STATUS.FAILED) {
           clearInterval(interval);
         }
       } catch (err) {

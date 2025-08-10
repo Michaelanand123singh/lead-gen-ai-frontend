@@ -1,46 +1,70 @@
-// frontend/src/App.js
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+// frontend/src/App.jsx
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Header from './components/common/Header';
+import Sidebar from './components/common/Sidebar';
 import Footer from './components/common/Footer';
 import HomePage from './pages/HomePage';
 import AnalyzePage from './pages/AnalyzePage';
 import BulkPage from './pages/BulkPage';
 import ReportsPage from './pages/ReportsPage';
+import LeadsPage from './pages/LeadsPage';
+import LeadTrackerPage from './pages/LeadTrackerPage';
 import SettingsPage from './pages/SettingsPage';
+import LoginPage from './pages/LoginPage';
+import ProposalPage from './pages/ProposalPage';
 import { ROUTES } from './utils/constants';
 import './index.css';
 
+function RequireAuth({ children }) {
+  const isAuthed = (() => {
+    try {
+      const raw = localStorage.getItem('auth');
+      if (!raw) return false;
+      const { access_token } = JSON.parse(raw);
+      return Boolean(access_token);
+    } catch {
+      return false;
+    }
+  })();
+  if (!isAuthed) {
+    return <Navigate to={ROUTES.LOGIN} replace />;
+  }
+  return children;
+}
+
 function App() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   return (
     <Router>
       <div className="App min-h-screen bg-gray-50 flex flex-col">
-        <Header />
-        
-        <main className="flex-1">
-          <Routes>
-            <Route path={ROUTES.HOME} element={<HomePage />} />
-            <Route path={ROUTES.ANALYZE} element={<AnalyzePage />} />
-            <Route path={ROUTES.BULK} element={<BulkPage />} />
-            <Route path={ROUTES.REPORTS} element={<ReportsPage />} />
-            <Route path={ROUTES.SETTINGS} element={<SettingsPage />} />
-            
-            {/* Catch all route - redirect to home */}
-            <Route path="*" element={
-              <div className="flex flex-col items-center justify-center h-96">
-                <h1 className="text-2xl font-bold text-gray-900 mb-4">Page Not Found</h1>
-                <p className="text-gray-600 mb-4">The page you're looking for doesn't exist.</p>
-                <a 
-                  href={ROUTES.HOME}
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
-                  Go Home
-                </a>
-              </div>
-            } />
-          </Routes>
-        </main>
-        
+        <Header onMenuClick={() => setSidebarOpen(true)} />
+        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
+        <div className="flex-1 flex">
+          {/* Sidebar spacer for desktop */}
+          <div className="hidden md:block md:w-64" />
+          <main className="flex-1">
+            <Routes>
+              <Route path={ROUTES.LOGIN} element={<LoginPage />} />
+              <Route path={ROUTES.HOME} element={<RequireAuth><HomePage /></RequireAuth>} />
+              <Route path={ROUTES.ANALYZE} element={<RequireAuth><AnalyzePage /></RequireAuth>} />
+              <Route path={ROUTES.BULK} element={<RequireAuth><BulkPage /></RequireAuth>} />
+              <Route path={ROUTES.REPORTS} element={<RequireAuth><ReportsPage /></RequireAuth>} />
+              <Route path={ROUTES.PROPOSALS} element={<RequireAuth><ProposalPage /></RequireAuth>} />
+              <Route path={ROUTES.LEADS} element={<RequireAuth><LeadsPage /></RequireAuth>} />
+              <Route path={ROUTES.LEAD_TRACKER} element={<RequireAuth><LeadTrackerPage /></RequireAuth>} />
+              <Route path={ROUTES.SETTINGS} element={<RequireAuth><SettingsPage /></RequireAuth>} />
+              
+              {/* Catch all route - redirect to home */}
+              <Route path="*" element={
+                <Navigate to={ROUTES.HOME} replace />
+              } />
+            </Routes>
+          </main>
+        </div>
+
         <Footer />
       </div>
     </Router>

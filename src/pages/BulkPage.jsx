@@ -15,6 +15,8 @@ const BulkPage = () => {
   const [activeBulk, setActiveBulk] = useState(null);
   const [loading, setLoading] = useState(false);
   const [pollingIntervals, setPollingIntervals] = useState({});
+  const [resultsLoading, setResultsLoading] = useState(false);
+  const [resultsPreview, setResultsPreview] = useState([]);
 
   // Fetch bulk operations on component mount
   useEffect(() => {
@@ -99,11 +101,15 @@ const BulkPage = () => {
 
   const handleViewResults = async (bulkId) => {
     try {
+      setResultsLoading(true);
       const results = await analysisService.getBulkResults(bulkId);
-      // You could navigate to a results page or show modal
-      console.log('Bulk results:', results);
+      const normalized = Array.isArray(results.results) ? results.results : [];
+      setResultsPreview(normalized);
     } catch (err) {
       console.error('Failed to fetch results:', err);
+      setResultsPreview([]);
+    } finally {
+      setResultsLoading(false);
     }
   };
 
@@ -199,6 +205,48 @@ const BulkPage = () => {
                       >
                         Export CSV
                       </button>
+                    </div>
+                  )}
+                  {resultsLoading && (
+                    <div className="mt-4">
+                      <LoadingSpinner size="sm" text="Loading results..." />
+                    </div>
+                  )}
+                  {!resultsLoading && resultsPreview.length > 0 && (
+                    <div className="mt-6">
+                      <h4 className="text-md font-semibold text-gray-900 mb-3">Results Preview</h4>
+                      <div className="overflow-x-auto border border-gray-200 rounded">
+                        <table className="min-w-full divide-y divide-gray-200">
+                          <thead className="bg-gray-50">
+                            <tr>
+                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">URL</th>
+                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company</th>
+                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Industry</th>
+                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Digital Maturity</th>
+                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Urgency</th>
+                            </tr>
+                          </thead>
+                          <tbody className="bg-white divide-y divide-gray-200">
+                            {resultsPreview.slice(0, 10).map((row) => {
+                              const data = row.result_data || {};
+                              return (
+                                <tr key={row.analysis_id}>
+                                  <td className="px-4 py-2 text-sm text-gray-900">{row.url}</td>
+                                  <td className="px-4 py-2 text-sm text-gray-700">{row.status}</td>
+                                  <td className="px-4 py-2 text-sm text-gray-700">{row.company_name || data.company_name || 'N/A'}</td>
+                                  <td className="px-4 py-2 text-sm text-gray-700">{row.industry || data.industry || 'N/A'}</td>
+                                  <td className="px-4 py-2 text-sm text-gray-700">{data.digital_maturity_score ?? 0}</td>
+                                  <td className="px-4 py-2 text-sm text-gray-700">{data.urgency_score ?? 0}</td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                      {resultsPreview.length > 10 && (
+                        <p className="mt-2 text-xs text-gray-500">Showing first 10 results. Export CSV to download all.</p>
+                      )}
                     </div>
                   )}
                 </div>
