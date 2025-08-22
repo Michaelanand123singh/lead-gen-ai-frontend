@@ -8,9 +8,5 @@ export default defineConfig({
     port: 3000,
     host: 'localhost',
     // ✅ REMOVED proxy - let frontend handle direct API calls
-  },
-  // Environment-specific configuration
-  define: {
-    __DEV__: import.meta.env.DEV
   }
 })
