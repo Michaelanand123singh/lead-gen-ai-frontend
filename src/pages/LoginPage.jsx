@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { ROUTES } from '../utils/constants';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://lead-gen-ai-backend-595294038624.asia-south2.run.app/api/v1';
 
 const LoginPage = () => {
   const navigate = useNavigate();
