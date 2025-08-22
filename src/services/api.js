@@ -1,5 +1,5 @@
 // frontend/src/services/api.js - FIXED VERSION
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://lead-gen-ai-backend.onrender.com/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://lead-gen-ai-backend-595294038624.asia-south2.run.app/api/v1';
 
 class ApiClient {
   constructor() {
