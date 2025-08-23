@@ -117,7 +117,7 @@ const SettingsPage = () => {
 
   const handleReset = () => {
     const defaultSettings = {
-      apiUrl: 'http://localhost:8000/api/v1',
+      apiUrl: 'http://localhost:8080/api/v1',
       autoRefresh: true,
       refreshInterval: 5000,
       maxFileSize: 10,
@@ -294,7 +294,7 @@ const SettingsPage = () => {
                     value={settings.apiUrl}
                     onChange={(e) => handleInputChange('apiUrl', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="http://localhost:8000/api/v1"
+                    placeholder="http://localhost:8080/api/v1"
                   />
                   <p className="mt-1 text-xs text-gray-500">Base URL for the backend API</p>
                 </div>
